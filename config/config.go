@@ -13,6 +13,9 @@ var (
 
 	// DB addr and passwd.
 	DB string
+
+	DockerHost = "tcp://127.0.0.1:2376"
+	HubHost    = "192.168.104.233"
 )
 
 func init() {

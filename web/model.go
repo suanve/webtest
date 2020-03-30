@@ -3,9 +3,13 @@ package web
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"webtest/config"
+	"webtest/engine"
+
 	//
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -69,28 +73,122 @@ func getChallengesStatus(uId int) []Challenge {
 	var Challenges []Challenge
 	var challenge Challenge
 
-	rows, _ := db.Query("SELECT * from tasks where userid=?", uId)
+	rows, _ := db.Query("SELECT challengeId,start,userid,url from tasks where userid=?", uId)
 	defer rows.Close()
 	for rows.Next() {
-		rows.Scan(&challenge.Id, &challenge.Id, &challenge.StartTime, &challenge.Uid, &challenge.Url) //获取当前用户开启的实验信息
+		rows.Scan(&challenge.Id, &challenge.StartTime, &challenge.Uid, &challenge.Url) //获取当前用户开启的实验信息
 		Challenges = append(Challenges, challenge)
 	}
 	return Challenges
 }
 
-func startChallenges(cId, uId int) bool {
-
-	//启动后 返回对应的url
-	url := "http://127.0.0.1"
-	// fmt.Printf("INSERT INTO tasks(challenge,start,userid,url) values (%d,%d,%d,'%s')", cId, time.Now().Unix(), uId, url)
-	rows, err := db.Query("INSERT INTO tasks(challengeId,start,userid,url) VALUES (?,?,?,?)", int(cId), int(time.Now().Unix()), int(uId), url)
+//停止对应的容器
+func stopChallenges(cId, uId int, Username string) int {
+	// ret 0,1,2
+	// 0 失败
+	// 1 成功
+	// 2 该任务不存在
+	var task Tasks
+	rows, _ := db.Query("SELECT id,url,containerId from tasks where userid=? and challengeId=?", uId, cId)
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&task.Id, &task.Url, &task.ContainerId) //获取当前用户开启的实验信息
+		if err != nil {
+			return 2
+		}
+	}
+	if task.ContainerId == "" {
+		return 2
+	}
+	tmpPort := strings.Split(task.Url, ":")[2]
+	port, _ := strconv.Atoi(tmpPort)
+	rows, err := db.Query("delete from ports where port=?", port)
 	defer rows.Close()
 	if err != nil {
-		return false
+		return 0
+	}
+	rows, err = db.Query("delete from tasks where userid=? and challengeId=?", uId, cId)
+	defer rows.Close()
+	if err != nil {
+		return 0
+	}
+
+	if engine.Ctr_StopContainer(task.ContainerId) == task.ContainerId {
+		return 1
 	} else {
-		return true
+		return 0
+	}
+
+}
+
+func startChallenges(cId, uId int, Username string) int {
+	// ret 0,1,2
+	// 0 失败
+	// 1 成功
+	// 2 已存在
+	var tasks []Tasks
+	var task Tasks
+	//启动后 返回对应的url
+
+	//检测是否已经有开启了的容器
+	rows, _ := db.Query("SELECT * from tasks where userid=? and challengeId=?", uId, cId)
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&task.Id, &task.ChallengeId, &task.Start, &task.Userid, &task.Url) //获取当前用户开启的实验信息
+		tasks = append(tasks, task)
+	}
+	if len(tasks) > 0 {
+		return 2
+	}
+
+	//获取实验的镜像名称
+	var image string
+	var inPort int //内部端口
+	rows, _ = db.Query("SELECT image,inport from images where challengeId=?", cId)
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&image, &inPort) //获取镜像设置的内部端口
+	}
+	fmt.Println("要启动一个容器", image)
+	//获取一个可用的端口号，不能重复
+
+	var outPort int //映射后的端口
+	for true {
+		outPort = RandInt64(20000, 30000)
+
+		rows, _ := db.Query("SELECT port from ports where port=?", outPort)
+		defer rows.Close()
+		if len(tasks) > 0 {
+			continue
+		} else {
+			rows, err := db.Query("INSERT INTO ports(port) VALUES (?)", int(outPort))
+			defer rows.Close()
+			if err != nil {
+				return 0
+			} else {
+				break
+			}
+			break
+		}
+	}
+	//启动一个容器	image,inPort,outPort
+	containerID := engine.Ctr_CreateContainer(image, inPort, outPort, Username, cId)
+	if containerID == "" {
+		return 0
+	}
+
+	//启动镜像，获取容器的端口号
+	url := "http://" + config.HubHost + ":" + strconv.Itoa(outPort)
+	//将容器的url存入数据库
+	rows, err := db.Query("INSERT INTO tasks(challengeId,start,userid,url,containerId) VALUES (?,?,?,?,?)", int(cId), int(time.Now().Unix()), int(uId), url, containerID)
+	defer rows.Close()
+	if err != nil {
+		return 0
+	} else {
+		return 1
 	}
 }
+
 func getItems(uid int) []Items {
 	var item Items
 	var items []Items
@@ -142,4 +240,13 @@ type Items struct {
 	Time    int64
 	Uid     int
 	Status  int
+}
+
+type Tasks struct {
+	Id          int
+	ChallengeId int
+	Start       int
+	Userid      int
+	Url         string
+	ContainerId string
 }

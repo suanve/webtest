@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"webtest/config"
+	"webtest/engine"
 
 	//
 	"github.com/dgrijalva/jwt-go"
@@ -132,10 +133,55 @@ func API_startChallenge(c *gin.Context) {
 
 	//传入用户id与实验id
 	code := 403
-	if startChallenges(challenge.Id, userInfo.Id) {
+	res := startChallenges(challenge.Id, userInfo.Id, userInfo.Username)
+	if res == 1 {
 		code = 200
+	} else if res == 2 {
+		code = 999
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
+}
+
+//获取用户请求的实验id，停止对应的容器
+func API_stopChallenge(c *gin.Context) {
+	//获取token
+	token := c.Request.Header.Get("token")
+	//获取用户名
+	userInfo, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+
+	var challenge Challenge
+
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	if err := json.Unmarshal(data, &challenge); err == nil {
+		fmt.Println(challenge.Id)
+	}
+	fmt.Println(userInfo)
+
+	//传入用户id与实验id
+	code := 403
+	res := stopChallenges(challenge.Id, userInfo.Id, userInfo.Username)
+	if res == 1 {
+		code = 200
+	} else if res == 2 {
+		code = 999
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
+}
+
+//获取当前服务器开启的容器
+func API_container_Get(c *gin.Context) {
+	res := engine.Ctr_ListContainer()
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "data": res})
 }
 
 //用户类型
