@@ -1,7 +1,7 @@
 package main
 
 import (
-	"webtest/web"
+	"webtest/web" //1
 )
 
 func main() {
