@@ -70,14 +70,16 @@ func Login(c *gin.Context) {
 	}
 
 	password, id := getPassword(user.Username)
+	level := getLevel(user.Username)
 	if password == user.Password {
 
 		var claims Claims
 		claims.Username = user.Username
 		claims.Id = id
+		claims.Level = level
 
 		t, _ := CreateToken(&claims)
-		c.JSON(http.StatusOK, gin.H{"code": 200, "token": t})
+		c.JSON(http.StatusOK, gin.H{"code": 200, "isAdmin": claims.Level, "token": t})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"code": 401})
 	}
@@ -182,32 +184,6 @@ func API_stopChallenge(c *gin.Context) {
 func API_container_Get(c *gin.Context) {
 	res := engine.Ctr_ListContainer()
 	c.JSON(http.StatusOK, gin.H{"message": "success!", "data": res})
-}
-
-//用户类型
-type User struct {
-	Username string `json:username`
-	Password string `json:password`
-}
-
-//首页实验数据类型
-type Challenge struct {
-	Id          int    `jsong:id`
-	Name        string `jsong:name`
-	Img         string `json:img`
-	Description string `json:descript`
-	Type        int    `json:type`
-	Open        int    `json:open`
-	StartTime   int64  `json:startTime`
-	Uid         string `json:uid`
-	Url         string `json:url`
-}
-
-type Claims struct {
-	Id       int    `json:"id"`       // id
-	Username string `json:"username"` // 用户名
-	Password string `json:"password"` // 密码
-	jwt.StandardClaims
 }
 
 // CreateToken create token

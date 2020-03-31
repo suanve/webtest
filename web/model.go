@@ -43,7 +43,9 @@ func init() {
 	// db.Exec(`INSERT INTO users(username, password, email) values("admin","adminn","a@a.com");`)
 }
 
+//获取用户的密码
 func getPassword(username string) (string, int) {
+	// ret 密码 id
 	var password string
 	var id int
 	rows, _ := db.Query("SELECT password,id from users where username=?", username)
@@ -55,6 +57,19 @@ func getPassword(username string) (string, int) {
 	return password, id
 }
 
+//获取用户等级
+func getLevel(username string) int {
+	// ret 等级
+	var level int
+	rows, _ := db.Query("SELECT level from users where username=?", username)
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&level)
+	}
+
+	return level
+}
+
 func getChallenges() []Challenge {
 
 	var Challenges []Challenge
@@ -64,6 +79,7 @@ func getChallenges() []Challenge {
 	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type)
+		challenge.Key = challenge.Id
 		Challenges = append(Challenges, challenge)
 	}
 	return Challenges
@@ -232,21 +248,4 @@ func delItems(id int) int {
 	} else {
 		return 1
 	}
-}
-
-type Items struct {
-	Id      int
-	Content string
-	Time    int64
-	Uid     int
-	Status  int
-}
-
-type Tasks struct {
-	Id          int
-	ChallengeId int
-	Start       int
-	Userid      int
-	Url         string
-	ContainerId string
 }
