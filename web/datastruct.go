@@ -1,6 +1,8 @@
 package web
 
-import "github.com/dgrijalva/jwt-go"
+import (
+	"github.com/dgrijalva/jwt-go"
+)
 
 //用户数据结构
 type User struct {
@@ -20,6 +22,7 @@ type Challenge struct {
 	Uid         string `json:uid`
 	Url         string `json:url`
 	Key         int    `json:key`
+	Image       string `json:image`
 }
 
 // JWT认证数据结构
@@ -48,4 +51,12 @@ type Items struct {
 	Time    int64
 	Uid     int
 	Status  int
+}
+
+type Image struct {
+	Id          int
+	image       string
+	name        string
+	challengeId int
+	inport      int
 }

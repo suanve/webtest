@@ -85,6 +85,36 @@ func getChallenges() []Challenge {
 	return Challenges
 }
 
+// 获取指定实验的信息
+func getChallenge(cId int) []Challenge {
+
+	var Challenges []Challenge
+	var challenge Challenge
+
+	rows, _ := db.Query("SELECT * from challenge where id=?", cId)
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type)
+		challenge.Image = getChallengeToImageName(cId)
+
+		Challenges = append(Challenges, challenge)
+	}
+	return Challenges
+}
+
+// 获取实验id对应的镜像名称
+func getChallengeToImageName(cId int) string {
+
+	var challengeId string
+	rows, _ := db.Query("SELECT image from images where challengeId=?", cId)
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&challengeId)
+	}
+	return challengeId
+}
+
+//获取用户开启的实验信息
 func getChallengesStatus(uId int) []Challenge {
 	var Challenges []Challenge
 	var challenge Challenge
@@ -197,6 +227,24 @@ func startChallenges(cId, uId int, Username string) int {
 	url := "http://" + config.HubHost + ":" + strconv.Itoa(outPort)
 	//将容器的url存入数据库
 	rows, err := db.Query("INSERT INTO tasks(challengeId,start,userid,url,containerId) VALUES (?,?,?,?,?)", int(cId), int(time.Now().Unix()), int(uId), url, containerID)
+	defer rows.Close()
+	if err != nil {
+		return 0
+	} else {
+		return 1
+	}
+}
+
+// 更新实验信息
+func updateChallengeInfo(challenge Challenge) int {
+	//更新实验表
+	rows, err := db.Query("UPDATE challenge set Name=?,Img=?,Description=?,Type=? where id=?", challenge.Name, challenge.Img, challenge.Description, challenge.Type, challenge.Id)
+	defer rows.Close()
+	if err != nil {
+		return 0
+	}
+
+	rows, err = db.Query("UPDATE images set image=? where challengeId=?", challenge.Image, challenge.Id)
 	defer rows.Close()
 	if err != nil {
 		return 0

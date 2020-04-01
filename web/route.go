@@ -17,10 +17,12 @@ func routing(r *gin.Engine) {
 	challenge := r.Group("/api/challenge/")
 	challenge.Use(JWTAuth())
 	{
-		challenge.GET("/get", API_GetChallenge)
+		challenge.GET("/get", API_GetChallenges)
+		challenge.POST("/get", API_GetChallenge)
 		challenge.POST("/getStatus", API_GetChallengeStatus)
 		challenge.POST("/start", API_startChallenge)
 		challenge.POST("/stop", API_stopChallenge)
+		challenge.POST("/edit", API_editChallenge)
 	}
 	container := r.Group("/api/container/")
 	container.Use(JWTAuth())

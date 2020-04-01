@@ -85,16 +85,48 @@ func Login(c *gin.Context) {
 	}
 }
 
-func API_GetChallenge(c *gin.Context) {
+// 获取所有实验的信息
+func API_GetChallenges(c *gin.Context) {
 	Challenges := getChallenges()
 	c.JSON(http.StatusOK, gin.H{"message": "success", "length": len(Challenges), "data": Challenges})
 }
 
-//根据token 获取用户身份，查找其启动的任务
-func API_GetChallengeStatus(c *gin.Context) {
-	//获取token
+// 获取指定实验的信息
+func API_GetChallenge(c *gin.Context) {
+	// 获取token
 	token := c.Request.Header.Get("token")
-	//获取用户名
+	// 获取用户名
+	_, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	//临时接受变量的结构体
+	var challenge Challenge
+	fmt.Println("data", string(data))
+	if err := json.Unmarshal(data, &challenge); err == nil {
+		fmt.Println("key:", challenge.Id)
+	}
+	Rescode := 401
+	Challenges := getChallenge(challenge.Id)
+	if len(Challenges) > 0 {
+		Rescode = 200
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success", "code": Rescode, "length": len(Challenges), "data": Challenges})
+}
+
+// 根据token 获取用户身份，查找其启动的任务
+func API_GetChallengeStatus(c *gin.Context) {
+	// 获取token
+	token := c.Request.Header.Get("token")
+	// 获取用户名
 	userInfo, err := ValidateToken(token)
 	if !err {
 		c.JSON(http.StatusOK, gin.H{
@@ -171,6 +203,41 @@ func API_stopChallenge(c *gin.Context) {
 	//传入用户id与实验id
 	code := 403
 	res := stopChallenges(challenge.Id, userInfo.Id, userInfo.Username)
+	if res == 1 {
+		code = 200
+	} else if res == 2 {
+		code = 999
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
+}
+
+//获取用户输入的信息,修改对应的实验信息
+func API_editChallenge(c *gin.Context) {
+	//获取token
+	token := c.Request.Header.Get("token")
+	//获取用户名
+	userInfo, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+
+	var challenge Challenge
+
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	if err := json.Unmarshal(data, &challenge); err == nil {
+		fmt.Println(challenge.Id)
+	}
+	fmt.Println(userInfo)
+
+	//传入用户id与实验id
+	code := 403
+	res := updateChallengeInfo(challenge)
 	if res == 1 {
 		code = 200
 	} else if res == 2 {
