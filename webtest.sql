@@ -28,6 +28,8 @@ CREATE TABLE `challenge` (
   `Img` varchar(255) DEFAULT NULL,
   `Description` text DEFAULT NULL,
   `Type` int(10) DEFAULT NULL,
+  `Image` varchar(255) DEFAULT NULL,
+  `Inport` int(255) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -38,7 +40,7 @@ CREATE TABLE `challenge` (
 
 LOCK TABLES `challenge` WRITE;
 /*!40000 ALTER TABLE `challenge` DISABLE KEYS */;
-INSERT INTO `challenge` VALUES (1,'exec1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',3),(2,'sqlli2','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',1),(3,'xss1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',2),(4,'sqlli4','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',2),(5,'nothing','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',3),(6,'sqlli6','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',1),(7,'sqlli7','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',1),(8,'sqlli2','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',2),(9,'sqlli2','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',3),(10,'sqlli2','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',1),(11,'sqlli2','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',2),(12,'sqlli2','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',3),(13,'sqlli2','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',4),(14,'sqlli2','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',2),(15,'no','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',4);
+INSERT INTO `challenge` VALUES (1,'exec1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',3,'suanve/exec:1',80),(3,'xss1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',2,'suanve/xss:1',80);
 /*!40000 ALTER TABLE `challenge` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -80,7 +82,7 @@ CREATE TABLE `ports` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `port` int(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -108,7 +110,7 @@ CREATE TABLE `tasks` (
   `url` varchar(255) DEFAULT NULL,
   `containerId` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -156,4 +158,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-03-31 12:35:07
+-- Dump completed on 2020-04-02 14:16:27
