@@ -212,6 +212,95 @@ func API_stopChallenge(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
 }
 
+//获取用户输入的信息,添加对应的实验
+func API_addChallenge(c *gin.Context) {
+	code := 403
+
+	//获取token
+	token := c.Request.Header.Get("token")
+	//获取用户名
+	userInfo, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+	if userInfo.Level < 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "access faild",
+		})
+		c.Abort()
+		return
+	}
+	var challenge Challenge
+
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	if err := json.Unmarshal(data, &challenge); err == nil {
+
+	}
+	//传入用户id与实验id
+
+	if challenge.Img == "" {
+		challenge.Img = "https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
+	}
+	if challenge.Description == "" {
+		challenge.Description = "nothing"
+	}
+	res := addChallengeInfo(challenge)
+	if res == 1 {
+		code = 200
+	} else if res == 2 {
+		code = 999
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
+}
+
+func API_delChallenge(c *gin.Context) {
+	//获取token
+	token := c.Request.Header.Get("token")
+	//获取用户名
+	userInfo, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+	if userInfo.Level < 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "access faild",
+		})
+		c.Abort()
+		return
+	}
+	var challenge Challenge
+
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	if err := json.Unmarshal(data, &challenge); err == nil {
+		fmt.Println(challenge.Id)
+	}
+	fmt.Println(userInfo)
+
+	//传入用户id与实验id
+	code := 403
+	res := delChallengeInfo(challenge.Id)
+	if res == 1 {
+		code = 200
+	} else if res == 2 {
+		code = 999
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
+}
+
 //获取用户输入的信息,修改对应的实验信息
 func API_editChallenge(c *gin.Context) {
 	//获取token
@@ -226,7 +315,14 @@ func API_editChallenge(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
+	if userInfo.Level < 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "access faild",
+		})
+		c.Abort()
+		return
+	}
 	var challenge Challenge
 
 	data, _ := ioutil.ReadAll(c.Request.Body)

@@ -78,7 +78,7 @@ func getChallenges() []Challenge {
 	rows, _ := db.Query("SELECT * from challenge")
 	defer rows.Close()
 	for rows.Next() {
-		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type)
+		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type, &challenge.Image, challenge.Inport)
 		challenge.Key = challenge.Id
 		Challenges = append(Challenges, challenge)
 	}
@@ -94,9 +94,8 @@ func getChallenge(cId int) []Challenge {
 	rows, _ := db.Query("SELECT * from challenge where id=?", cId)
 	defer rows.Close()
 	for rows.Next() {
-		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type)
-		challenge.Image = getChallengeToImageName(cId)
-
+		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type, &challenge.Image, &challenge.Inport)
+		// challenge.Image = getChallengeToImageName(cId)
 		Challenges = append(Challenges, challenge)
 	}
 	return Challenges
@@ -190,7 +189,7 @@ func startChallenges(cId, uId int, Username string) int {
 	//获取实验的镜像名称
 	var image string
 	var inPort int //内部端口
-	rows, _ = db.Query("SELECT image,inport from images where challengeId=?", cId)
+	rows, _ = db.Query("SELECT Image,Inport from challenge where id=?", cId)
 	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&image, &inPort) //获取镜像设置的内部端口
@@ -235,16 +234,33 @@ func startChallenges(cId, uId int, Username string) int {
 	}
 }
 
-// 更新实验信息
-func updateChallengeInfo(challenge Challenge) int {
-	//更新实验表
-	rows, err := db.Query("UPDATE challenge set Name=?,Img=?,Description=?,Type=? where id=?", challenge.Name, challenge.Img, challenge.Description, challenge.Type, challenge.Id)
+// 添加实验信息
+func addChallengeInfo(challenge Challenge) int {
+	// 插入实验
+	fmt.Println("INSERT INTO challenge(Name,Img,Description,Type,Image,Inport) VALUES(?,?,?,?,?,?)", challenge.Name, challenge.Img, challenge.Description, challenge.Type, challenge.Image, challenge.Inport)
+	rows, err := db.Query("INSERT INTO challenge(Name,Img,Description,Type,Image,Inport) VALUES(?,?,?,?,?,?)", challenge.Name, challenge.Img, challenge.Description, challenge.Type, challenge.Image, challenge.Inport)
 	defer rows.Close()
 	if err != nil {
 		return 0
 	}
+	return 1
+}
 
-	rows, err = db.Query("UPDATE images set image=? where challengeId=?", challenge.Image, challenge.Id)
+// 更新实验信息
+func updateChallengeInfo(challenge Challenge) int {
+	//更新实验表
+	rows, err := db.Query("UPDATE challenge set Name=?,Img=?,Description=?,Type=?,Image=?,Inport=? where id=?", challenge.Name, challenge.Img, challenge.Description, challenge.Type, challenge.Image, challenge.Inport, challenge.Id)
+	defer rows.Close()
+	if err != nil {
+		return 0
+	}
+	return 1
+}
+
+// 删除实验信息
+func delChallengeInfo(cId int) int {
+	fmt.Println("delete from challenge where id=?", cId)
+	rows, err := db.Query("delete from challenge where id=?", cId)
 	defer rows.Close()
 	if err != nil {
 		return 0
