@@ -31,7 +31,7 @@ CREATE TABLE `challenge` (
   `Image` varchar(255) DEFAULT NULL,
   `Inport` int(255) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -40,7 +40,7 @@ CREATE TABLE `challenge` (
 
 LOCK TABLES `challenge` WRITE;
 /*!40000 ALTER TABLE `challenge` DISABLE KEYS */;
-INSERT INTO `challenge` VALUES (1,'exec1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',3,'suanve/exec:1',80),(3,'xss1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',2,'suanve/xss:1',80);
+INSERT INTO `challenge` VALUES (1,'exec1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',1,'suanve/exec:1',80),(2,'xss1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothging',1,'suanve/xss:1',80),(17,'sqli1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothing',1,'suanve/sqli:1',80),(18,'tomcat_1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothing',4,'consol/tomcat-7.0',8080),(19,'thinkphp_rce','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothing',2,'suanve/thinkphp:1',80),(20,'webmin_1','https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png','nothing',3,'piersonjarvis/webmin-samba',80);
 /*!40000 ALTER TABLE `challenge` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -82,7 +82,7 @@ CREATE TABLE `ports` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `port` int(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=98 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -91,7 +91,6 @@ CREATE TABLE `ports` (
 
 LOCK TABLES `ports` WRITE;
 /*!40000 ALTER TABLE `ports` DISABLE KEYS */;
-INSERT INTO `ports` VALUES (35,23124),(36,21962);
 /*!40000 ALTER TABLE `ports` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -110,7 +109,7 @@ CREATE TABLE `tasks` (
   `url` varchar(255) DEFAULT NULL,
   `containerId` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -119,7 +118,6 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (44,'3',1585657363,2,'http://192.168.104.233:23124','30228a22be1173df2456f47acf2969745dcd3ac94213fd208a904499a1c4d629'),(45,'1',1585657378,2,'http://192.168.104.233:21962','1c3b90b1d99daa176935da968c66393726d0ff0fbadd655b03b0e697dbdeabbf');
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -136,7 +134,7 @@ CREATE TABLE `users` (
   `password` varchar(255) DEFAULT NULL,
   `level` int(10) DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -158,4 +156,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-04-02 14:16:27
+-- Dump completed on 2020-04-03 16:27:29

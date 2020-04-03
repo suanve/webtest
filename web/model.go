@@ -76,10 +76,10 @@ func getChallenges() []Challenge {
 	var Challenges []Challenge
 	var challenge Challenge
 
-	rows, _ := db.Query("SELECT id,Name,Img,Description,Type from challenge")
+	rows, _ := db.Query("SELECT id,Name,Img,Description,Type,Image from challenge")
 	defer rows.Close()
 	for rows.Next() {
-		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type)
+		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type, &challenge.Image)
 		challenge.Key = challenge.Id
 		Challenges = append(Challenges, challenge)
 	}

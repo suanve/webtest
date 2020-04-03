@@ -85,13 +85,13 @@ func Login(c *gin.Context) {
 }
 
 // 获取所有实验的信息
-func API_GetChallenges(c *gin.Context) {
+func API_getChallenges(c *gin.Context) {
 	Challenges := getChallenges()
 	c.JSON(http.StatusOK, gin.H{"message": "success", "length": len(Challenges), "data": Challenges})
 }
 
 // 获取指定实验的信息
-func API_GetChallenge(c *gin.Context) {
+func API_getChallenge(c *gin.Context) {
 	// 获取token
 	token := c.Request.Header.Get("token")
 	// 获取用户名
@@ -122,7 +122,7 @@ func API_GetChallenge(c *gin.Context) {
 }
 
 // 根据token 获取用户身份，查找其启动的任务
-func API_GetChallengeStatus(c *gin.Context) {
+func API_getChallengeStatus(c *gin.Context) {
 	// 获取token
 	token := c.Request.Header.Get("token")
 	// 获取用户名
@@ -428,11 +428,20 @@ func API_getUser(c *gin.Context) {
 	// 获取token
 	token := c.Request.Header.Get("token")
 	// 获取用户名
-	_, err := ValidateToken(token)
+	userInfo, err := ValidateToken(token)
 	if !err {
 		c.JSON(http.StatusOK, gin.H{
 			"status": -1,
 			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+
+	if userInfo.Level < 1 {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "access faild",
 		})
 		c.Abort()
 		return
