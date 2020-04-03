@@ -34,5 +34,15 @@ func routing(r *gin.Engine) {
 		// container.POST("/getStatus", API_GetChallengeStatus)
 		// container.POST("/start", API_startChallenge)
 	}
-
+	user := r.Group("/api/user/")
+	user.Use(JWTAuth())
+	{
+		user.GET("/get", API_getUsers)
+		user.POST("/get", API_getUser)
+		user.POST("/add", API_addUser)
+		user.POST("/del", API_delUser)
+		user.POST("/edit", API_editUser)
+		// container.POST("/getStatus", API_GetChallengeStatus)
+		// container.POST("/start", API_startChallenge)
+	}
 }

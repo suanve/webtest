@@ -9,10 +9,9 @@ import (
 	"time"
 
 	"webtest/config"
-	"webtest/engine"
 
 	//
-	"github.com/dgrijalva/jwt-go"
+
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -167,7 +166,7 @@ func API_startChallenge(c *gin.Context) {
 
 	//传入用户id与实验id
 	code := 403
-	res := startChallenges(challenge.Id, userInfo.Id, userInfo.Username)
+	res := startChallenge(challenge.Id, userInfo.Id, userInfo.Username)
 	if res == 1 {
 		code = 200
 	} else if res == 2 {
@@ -202,7 +201,7 @@ func API_stopChallenge(c *gin.Context) {
 
 	//传入用户id与实验id
 	code := 403
-	res := stopChallenges(challenge.Id, userInfo.Id, userInfo.Username)
+	res := stopChallenge(challenge.Id, userInfo.Id, userInfo.Username)
 	if res == 1 {
 		code = 200
 	} else if res == 2 {
@@ -228,7 +227,7 @@ func API_addChallenge(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	if userInfo.Level < 0 {
+	if userInfo.Level < 1 {
 		c.JSON(http.StatusOK, gin.H{
 			"status": -1,
 			"msg":    "access faild",
@@ -250,7 +249,7 @@ func API_addChallenge(c *gin.Context) {
 	if challenge.Description == "" {
 		challenge.Description = "nothing"
 	}
-	res := addChallengeInfo(challenge)
+	res := addChallenge(challenge)
 	if res == 1 {
 		code = 200
 	} else if res == 2 {
@@ -273,7 +272,7 @@ func API_delChallenge(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	if userInfo.Level < 0 {
+	if userInfo.Level < 1 {
 		c.JSON(http.StatusOK, gin.H{
 			"status": -1,
 			"msg":    "access faild",
@@ -291,7 +290,7 @@ func API_delChallenge(c *gin.Context) {
 
 	//传入用户id与实验id
 	code := 403
-	res := delChallengeInfo(challenge.Id)
+	res := delChallenge(challenge.Id)
 	if res == 1 {
 		code = 200
 	} else if res == 2 {
@@ -315,7 +314,7 @@ func API_editChallenge(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	if userInfo.Level < 0 {
+	if userInfo.Level < 1 {
 		c.JSON(http.StatusOK, gin.H{
 			"status": -1,
 			"msg":    "access faild",
@@ -333,7 +332,7 @@ func API_editChallenge(c *gin.Context) {
 
 	//传入用户id与实验id
 	code := 403
-	res := updateChallengeInfo(challenge)
+	res := updateChallenge(challenge)
 	if res == 1 {
 		code = 200
 	} else if res == 2 {
@@ -357,7 +356,7 @@ func API_getContainer(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	if userInfo.Level < 0 {
+	if userInfo.Level < 1 {
 		c.JSON(http.StatusOK, gin.H{
 			"status": -1,
 			"msg":    "access faild",
@@ -394,7 +393,7 @@ func API_stopContainer(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	if userInfo.Level < 0 {
+	if userInfo.Level < 1 {
 		c.JSON(http.StatusOK, gin.H{
 			"status": -1,
 			"msg":    "access faild",
@@ -417,66 +416,163 @@ func API_stopContainer(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code, "data": res})
 }
 
-//获取当前服务器开启的容器
-func API_container_Get(c *gin.Context) {
-	res := engine.Ctr_ListContainer()
-	c.JSON(http.StatusOK, gin.H{"message": "success!", "data": res})
+//获取当前服务器所有的用户
+func API_getUsers(c *gin.Context) {
+	res := getUsers()
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "length": len(res), "data": res})
 }
 
-// CreateToken create token
-func CreateToken(claims *Claims) (signedToken string, success bool) {
-	claims.ExpiresAt = time.Now().Add(time.Minute * 30).Unix()
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(config.SecretKey))
-	if err != nil {
-		return
-	}
-	success = true
-	return
-}
+//获取指定用户的信息
+func API_getUser(c *gin.Context) {
 
-func ValidateToken(signedToken string) (claims *Claims, success bool) {
-	token, err := jwt.ParseWithClaims(signedToken, &Claims{},
-		func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected login method %v", token.Header["alg"])
-			}
-			return []byte(config.SecretKey), nil
+	// 获取token
+	token := c.Request.Header.Get("token")
+	// 获取用户名
+	_, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
 		})
-
-	if err != nil {
+		c.Abort()
 		return
 	}
 
-	claims, ok := token.Claims.(*Claims)
-	if ok && token.Valid {
-		success = true
-		return
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	//临时接受变量的结构体
+	var user User
+	fmt.Println("data", string(data))
+	if err := json.Unmarshal(data, &user); err == nil {
+		fmt.Println("key:", user.Id)
+	}
+	Rescode := 401
+	Challenges := getUser(user.Id)
+	if len(Challenges) > 0 {
+		Rescode = 200
 	}
 
-	return
+	c.JSON(http.StatusOK, gin.H{"message": "success", "code": Rescode, "length": len(Challenges), "data": Challenges})
 }
 
-func JWTAuth() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		token := c.Request.Header.Get("token")
-		if token == "" {
-			c.JSON(http.StatusOK, gin.H{
-				"status": -1,
-				"msg":    "请求未携带token，无权限访问",
-			})
-			c.Abort()
-			return
-		}
+// 添加用户
+func API_addUser(c *gin.Context) {
+	code := 403
 
-		_, err := ValidateToken(token)
-		if !err {
-			c.JSON(http.StatusOK, gin.H{
-				"status": -1,
-				"msg":    "token faild",
-			})
-			c.Abort()
-			return
-		}
+	//获取token
+	token := c.Request.Header.Get("token")
+	//获取用户名
+	userInfo, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
 	}
+	if userInfo.Level < 1 {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "access faild",
+		})
+		c.Abort()
+		return
+	}
+	var user User
+
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	if err := json.Unmarshal(data, &user); err == nil {
+
+	}
+
+	res := addUser(user)
+	if res == 1 {
+		code = 200
+	} else if res == 2 {
+		code = 999
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
+}
+
+// 删除用户
+func API_delUser(c *gin.Context) {
+	code := 403
+	//获取token
+	token := c.Request.Header.Get("token")
+	//获取用户名
+	userInfo, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+	if userInfo.Level < 1 {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "access faild",
+		})
+		c.Abort()
+		return
+	}
+	var user User
+
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	if err := json.Unmarshal(data, &user); err == nil {
+
+	}
+
+	res := delUser(user.Id)
+	if res == 1 {
+		code = 200
+	} else if res == 2 {
+		code = 999
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
+}
+
+// 获取用户输入的信息,修改对应的用户
+func API_editUser(c *gin.Context) {
+	//获取token
+	token := c.Request.Header.Get("token")
+	//获取用户名
+	userInfo, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+	if userInfo.Level < 1 {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "access faild",
+		})
+		c.Abort()
+		return
+	}
+	var user User
+
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	if err := json.Unmarshal(data, &user); err == nil {
+		fmt.Println(user.Id)
+	}
+	fmt.Println(userInfo)
+
+	//传入用户id与实验id
+	code := 403
+	res := updateUser(user)
+	if res == 1 {
+		code = 200
+	} else if res == 2 {
+		code = 999
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
 }

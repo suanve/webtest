@@ -70,15 +70,16 @@ func getLevel(username string) int {
 	return level
 }
 
+// 获取所有的实验
 func getChallenges() []Challenge {
 
 	var Challenges []Challenge
 	var challenge Challenge
 
-	rows, _ := db.Query("SELECT * from challenge")
+	rows, _ := db.Query("SELECT id,Name,Img,Description,Type from challenge")
 	defer rows.Close()
 	for rows.Next() {
-		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type, &challenge.Image, challenge.Inport)
+		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type)
 		challenge.Key = challenge.Id
 		Challenges = append(Challenges, challenge)
 	}
@@ -118,10 +119,20 @@ func getChallengesStatus(uId int) []Challenge {
 	var Challenges []Challenge
 	var challenge Challenge
 
-	rows, _ := db.Query("SELECT challengeId,start,userid,url from tasks where userid=?", uId)
+	rows, _ := db.Query("select id,Name,Img,Description,Type from challenge")
 	defer rows.Close()
 	for rows.Next() {
-		rows.Scan(&challenge.Id, &challenge.StartTime, &challenge.Uid, &challenge.Url) //获取当前用户开启的实验信息
+		challenge = Challenge{}
+		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type) //获取当前用户开启的实验信息
+
+		rowsTask, _ := db.Query("select url from tasks where userid=? and challengeId=?", uId, challenge.Id)
+		defer rowsTask.Close()
+		for rowsTask.Next() {
+			rowsTask.Scan(&challenge.Description) //获取当前用户开启的实验信息
+
+		}
+
+		fmt.Println(challenge)
 		Challenges = append(Challenges, challenge)
 	}
 	return Challenges
@@ -143,12 +154,12 @@ func stopContainer(challenge Challenge) int {
 		}
 	}
 	fmt.Println(task.ChallengeId, task.Userid, challenge.Username)
-	return stopChallenges(task.ChallengeId, task.Userid, challenge.Username)
+	return stopChallenge(task.ChallengeId, task.Userid, challenge.Username)
 
 }
 
 //停止对应的容器
-func stopChallenges(cId, uId int, Username string) int {
+func stopChallenge(cId, uId int, Username string) int {
 	// ret 0,1,2
 	// 0 失败
 	// 1 成功
@@ -186,7 +197,7 @@ func stopChallenges(cId, uId int, Username string) int {
 
 }
 
-func startChallenges(cId, uId int, Username string) int {
+func startChallenge(cId, uId int, Username string) int {
 	// ret 0,1,2
 	// 0 失败
 	// 1 成功
@@ -255,7 +266,7 @@ func startChallenges(cId, uId int, Username string) int {
 }
 
 // 添加实验信息
-func addChallengeInfo(challenge Challenge) int {
+func addChallenge(challenge Challenge) int {
 	// 插入实验
 	fmt.Println("INSERT INTO challenge(Name,Img,Description,Type,Image,Inport) VALUES(?,?,?,?,?,?)", challenge.Name, challenge.Img, challenge.Description, challenge.Type, challenge.Image, challenge.Inport)
 	rows, err := db.Query("INSERT INTO challenge(Name,Img,Description,Type,Image,Inport) VALUES(?,?,?,?,?,?)", challenge.Name, challenge.Img, challenge.Description, challenge.Type, challenge.Image, challenge.Inport)
@@ -267,7 +278,7 @@ func addChallengeInfo(challenge Challenge) int {
 }
 
 // 更新实验信息
-func updateChallengeInfo(challenge Challenge) int {
+func updateChallenge(challenge Challenge) int {
 	//更新实验表
 	rows, err := db.Query("UPDATE challenge set Name=?,Img=?,Description=?,Type=?,Image=?,Inport=? where id=?", challenge.Name, challenge.Img, challenge.Description, challenge.Type, challenge.Image, challenge.Inport, challenge.Id)
 	defer rows.Close()
@@ -278,7 +289,7 @@ func updateChallengeInfo(challenge Challenge) int {
 }
 
 // 删除实验信息
-func delChallengeInfo(cId int) int {
+func delChallenge(cId int) int {
 	fmt.Println("delete from challenge where id=?", cId)
 	rows, err := db.Query("delete from challenge where id=?", cId)
 	defer rows.Close()
@@ -315,22 +326,52 @@ func getContainers() []Challenge {
 	return Challenges
 }
 
-func getItems(uid int) []Items {
-	var item Items
-	var items []Items
-	i := 0
-	rows, _ := db.Query("SELECT id,content,time,uid,status from items where uid=?", uid)
+// 获取所有的用户
+func getUsers() []User {
+
+	var users []User
+	var user User
+
+	rows, _ := db.Query("SELECT id,username,level from users")
 	defer rows.Close()
 	for rows.Next() {
-		rows.Scan(&item.Id, &item.Content, &item.Time, &item.Uid, &item.Status)
-		items = append(items, item)
-		i++
+		rows.Scan(&user.Id, &user.Username, &user.Level)
+		users = append(users, user)
 	}
-	return items
+	return users
 }
 
-func updateItems(id int, status int) int {
-	rows, err := db.Query("UPDATE items set status=? from items where uid=?", status, id)
+// 获取指定的用户信息
+func getUser(uId int) []User {
+
+	var users []User
+	var user User
+
+	rows, _ := db.Query("SELECT id,username,password,level from users where id=?", uId)
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&user.Id, &user.Username, &user.Password, &user.Level)
+		users = append(users, user)
+	}
+	return users
+}
+
+// 添加用户
+func addUser(user User) int {
+
+	fmt.Println("INSERT INTO users(username,password,level) VALUES(?,?,?)", user.Username, user.Password, user.Level)
+	rows, err := db.Query("INSERT INTO users(username,password,level) VALUES(?,?,?)", user.Username, user.Password, user.Level)
+	defer rows.Close()
+	if err != nil {
+		return 0
+	}
+	return 1
+}
+
+// 删除用户
+func delUser(uId int) int {
+	fmt.Println("delete from users where id=?", uId)
+	rows, err := db.Query("delete from users where id=?", uId)
 	defer rows.Close()
 	if err != nil {
 		return 0
@@ -339,23 +380,13 @@ func updateItems(id int, status int) int {
 	}
 }
 
-func addItems(item Items) bool {
-	fmt.Println(item.Content)
-	rows, err := db.Query("INSERT INTO items(content,time,uid,status) values (?,?,?,?)", item.Content, item.Time, item.Uid, item.Status)
-	defer rows.Close()
-	if err != nil {
-		return false
-	} else {
-		return true
-	}
-}
+// 更新用户信息
+func updateUser(user User) int {
 
-func delItems(id int) int {
-	rows, err := db.Query("delete from items where id=?", id)
+	rows, err := db.Query("UPDATE users set username=?,password=?,level=? where id=?", user.Username, user.Password, user.Level, user.Id)
 	defer rows.Close()
 	if err != nil {
 		return 0
-	} else {
-		return 1
 	}
+	return 1
 }

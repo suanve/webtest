@@ -6,8 +6,10 @@ import (
 
 //用户数据结构
 type User struct {
+	Id       int    `json:id`
 	Username string `json:username`
 	Password string `json:password`
+	Level    int    `json:level`
 }
 
 //首页实验数据结构
