@@ -343,6 +343,80 @@ func API_editChallenge(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
 }
 
+// 获取用户们开启的容器
+func API_getContainer(c *gin.Context) {
+	//获取token
+	token := c.Request.Header.Get("token")
+	//获取用户名
+	userInfo, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+	if userInfo.Level < 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "access faild",
+		})
+		c.Abort()
+		return
+	}
+	var challenge Challenge
+
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	if err := json.Unmarshal(data, &challenge); err == nil {
+		fmt.Println(challenge.Id)
+	}
+	fmt.Println(userInfo)
+
+	//传入用户id与实验id
+	code := 200
+	res := getContainers()
+	length := len(res)
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code, "length": length, "data": res})
+}
+
+// 后台停止用户开启的容器
+func API_stopContainer(c *gin.Context) {
+	//获取token
+	token := c.Request.Header.Get("token")
+	//获取用户名
+	userInfo, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+	if userInfo.Level < 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "access faild",
+		})
+		c.Abort()
+		return
+	}
+	var challenge Challenge
+
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	if err := json.Unmarshal(data, &challenge); err == nil {
+		fmt.Println(challenge.Id)
+	}
+	fmt.Println(userInfo)
+
+	//传入用户id与实验id
+	code := 200
+	res := stopContainer(challenge)
+
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code, "data": res})
+}
+
 //获取当前服务器开启的容器
 func API_container_Get(c *gin.Context) {
 	res := engine.Ctr_ListContainer()

@@ -24,6 +24,7 @@ type Challenge struct {
 	Key         int    `json:key`
 	Image       string `json:image`
 	Inport      int    `json:inport`
+	Username    string `json:username`
 }
 
 // JWT认证数据结构

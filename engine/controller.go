@@ -62,4 +62,5 @@ type Container struct {
 	Created int64        `json:created`
 	PortS   []types.Port `json:ports`
 	State   string       `json:state`
+	Key     int          `json:key`
 }

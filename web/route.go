@@ -29,7 +29,8 @@ func routing(r *gin.Engine) {
 	container := r.Group("/api/container/")
 	container.Use(JWTAuth())
 	{
-		container.GET("/list", API_container_Get)
+		container.GET("/get", API_getContainer)
+		container.POST("/stop", API_stopContainer)
 		// container.POST("/getStatus", API_GetChallengeStatus)
 		// container.POST("/start", API_startChallenge)
 	}

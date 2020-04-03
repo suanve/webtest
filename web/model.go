@@ -127,6 +127,26 @@ func getChallengesStatus(uId int) []Challenge {
 	return Challenges
 }
 
+// 后台停止容器
+func stopContainer(challenge Challenge) int {
+	// ret 0,1,2
+	// 0 失败
+	// 1 成功
+	// 2 该任务不存在
+	var task Tasks
+	rows, _ := db.Query("SELECT challengeId,userid from tasks where id=?", challenge.Id)
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&task.ChallengeId, &task.Userid)
+		if err != nil {
+			return 2
+		}
+	}
+	fmt.Println(task.ChallengeId, task.Userid, challenge.Username)
+	return stopChallenges(task.ChallengeId, task.Userid, challenge.Username)
+
+}
+
 //停止对应的容器
 func stopChallenges(cId, uId int, Username string) int {
 	// ret 0,1,2
@@ -267,6 +287,32 @@ func delChallengeInfo(cId int) int {
 	} else {
 		return 1
 	}
+}
+
+//获取用户开启的容器
+func getContainers() []Challenge {
+	var Challenges []Challenge
+	var challenge Challenge
+
+	rows, _ := db.Query("SELECT id,challengeId,start,userid,url from tasks")
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&challenge.Key, &challenge.Id, &challenge.StartTime, &challenge.Uid, &challenge.Url) //获取已经开启的容器
+
+		rowsImage, _ := db.Query("SELECT Image,Name,Type from challenge where id=?", challenge.Id) //获取对应容器的名称与镜像名称
+		defer rowsImage.Close()
+		for rowsImage.Next() {
+			rowsImage.Scan(&challenge.Image, &challenge.Name, &challenge.Type)
+		}
+		rowsUser, _ := db.Query("SELECT username from users where id=?", challenge.Uid) //获取对应的用户
+		defer rowsUser.Close()
+		for rowsUser.Next() {
+			rowsUser.Scan(&challenge.Username)
+		}
+
+		Challenges = append(Challenges, challenge)
+	}
+	return Challenges
 }
 
 func getItems(uid int) []Items {
