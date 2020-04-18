@@ -76,7 +76,7 @@ func getChallenges() []Challenge {
 	var Challenges []Challenge
 	var challenge Challenge
 
-	rows, _ := db.Query("SELECT id,Name,Img,Description,Type,Image from challenge")
+	rows, _ := db.Query("SELECT id,Name,Img,Description,Type,Image from challenges")
 	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type, &challenge.Image)
@@ -92,7 +92,7 @@ func getChallenge(cId int) []Challenge {
 	var Challenges []Challenge
 	var challenge Challenge
 
-	rows, _ := db.Query("SELECT * from challenge where id=?", cId)
+	rows, _ := db.Query("SELECT * from challenges where id=?", cId)
 	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&challenge.Id, &challenge.Name, &challenge.Img, &challenge.Description, &challenge.Type, &challenge.Image, &challenge.Inport)
@@ -119,7 +119,7 @@ func getChallengesStatus(uId int) []Challenge {
 	var Challenges []Challenge
 	var challenge Challenge
 
-	rows, _ := db.Query("select id,Name,Img,Description,Type from challenge")
+	rows, _ := db.Query("select id,Name,Img,Description,Type from challenges")
 	defer rows.Close()
 	for rows.Next() {
 		challenge = Challenge{}
@@ -220,7 +220,7 @@ func startChallenge(cId, uId int, Username string) int {
 	//获取实验的镜像名称
 	var image string
 	var inPort int //内部端口
-	rows, _ = db.Query("SELECT Image,Inport from challenge where id=?", cId)
+	rows, _ = db.Query("SELECT Image,Inport from challenges where id=?", cId)
 	defer rows.Close()
 	for rows.Next() {
 		rows.Scan(&image, &inPort) //获取镜像设置的内部端口
@@ -290,8 +290,8 @@ func updateChallenge(challenge Challenge) int {
 
 // 删除实验信息
 func delChallenge(cId int) int {
-	fmt.Println("delete from challenge where id=?", cId)
-	rows, err := db.Query("delete from challenge where id=?", cId)
+	fmt.Println("delete from challenges where id=?", cId)
+	rows, err := db.Query("delete from challenges where id=?", cId)
 	defer rows.Close()
 	if err != nil {
 		return 0
@@ -310,7 +310,7 @@ func getContainers() []Challenge {
 	for rows.Next() {
 		rows.Scan(&challenge.Key, &challenge.Id, &challenge.StartTime, &challenge.Uid, &challenge.Url) //获取已经开启的容器
 
-		rowsImage, _ := db.Query("SELECT Image,Name,Type from challenge where id=?", challenge.Id) //获取对应容器的名称与镜像名称
+		rowsImage, _ := db.Query("SELECT Image,Name,Type from challenges where id=?", challenge.Id) //获取对应容器的名称与镜像名称
 		defer rowsImage.Close()
 		for rowsImage.Next() {
 			rowsImage.Scan(&challenge.Image, &challenge.Name, &challenge.Type)

@@ -26,6 +26,7 @@ func routing(r *gin.Engine) {
 		challenge.POST("/add", API_addChallenge)
 		challenge.POST("/del", API_delChallenge)
 	}
+	// 容器管理路由
 	container := r.Group("/api/container/")
 	container.Use(JWTAuth())
 	{
@@ -34,6 +35,7 @@ func routing(r *gin.Engine) {
 		// container.POST("/getStatus", API_GetChallengeStatus)
 		// container.POST("/start", API_startChallenge)
 	}
+	// 用户管理路由
 	user := r.Group("/api/user/")
 	user.Use(JWTAuth())
 	{
