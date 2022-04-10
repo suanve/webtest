@@ -614,3 +614,65 @@ func API_editUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
 }
+
+// 修改用户密码
+func API_UpdatePass(c *gin.Context) {
+	//获取token
+	token := c.Request.Header.Get("token")
+	//获取用户名
+	userInfo, err := ValidateToken(token)
+	if !err {
+		c.JSON(http.StatusOK, gin.H{
+			"status": -1,
+			"msg":    "token faild",
+		})
+		c.Abort()
+		return
+	}
+	type TmpUser struct {
+		OldPass   string `json:"old_Password"`
+		NewPass   string `json:"new_Password"`
+		CheckPass string `json:"check_Password"`
+	}
+
+	var user TmpUser
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	if err := json.Unmarshal(data, &user); err == nil {
+	}
+
+	// 确认旧密码是否相等
+	fmt.Println(userInfo)
+	fmt.Println(user)
+	resUser := getUserFromUsername(userInfo.Username)
+	if len(resUser) != 1 {
+		c.JSON(http.StatusOK, gin.H{"message": "未知错误!", "code": 500})
+		return
+	}
+
+	if resUser[0].Password != user.OldPass {
+		c.JSON(http.StatusOK, gin.H{"message": "旧密码不正确!", "code": 500})
+		return
+	}
+	if user.NewPass != user.CheckPass {
+		c.JSON(http.StatusOK, gin.H{"message": "新密码输入不相同!", "code": 500})
+		return
+	}
+	if user.NewPass == "" || user.CheckPass == "" {
+		c.JSON(http.StatusOK, gin.H{"message": "密码输入错误!", "code": 500})
+		return
+	}
+
+	code := 403
+	res := updateUser(User{
+		Id:       resUser[0].Id,
+		Username: resUser[0].Username,
+		Password: user.NewPass,
+		Level:    resUser[0].Level,
+	})
+	if res == 1 {
+		code = 200
+	} else if res == 2 {
+		code = 999
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
+}

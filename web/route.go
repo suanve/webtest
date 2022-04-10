@@ -45,6 +45,7 @@ func routing(r *gin.Engine) {
 		user.POST("/add", API_addUser)
 		user.POST("/del", API_delUser)
 		user.POST("/edit", API_editUser)
+		user.POST("/update_pass", API_UpdatePass)
 		// container.POST("/getStatus", API_GetChallengeStatus)
 		// container.POST("/start", API_startChallenge)
 	}
