@@ -7,5 +7,5 @@ func Run() {
 	r.Use(CorsMiddleware())
 	routing(r)
 	// r.Static("/static", "web/static")
-	r.Run(":8080") // listen and serve on 0.0.0.0:8080
+	r.Run(":8081") // listen and serve on 0.0.0.0:8080
 }

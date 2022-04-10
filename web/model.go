@@ -356,6 +356,19 @@ func getUser(uId int) []User {
 	return users
 }
 
+// 获取指定的用户信息
+func getUserFromUsername(username string) []User {
+	var users []User
+	var user User
+	rows, _ := db.Query("SELECT id,username,password,level from users where username=?", username)
+	defer rows.Close()
+	for rows.Next() {
+		rows.Scan(&user.Id, &user.Username, &user.Password, &user.Level)
+		users = append(users, user)
+	}
+	return users
+}
+
 // 添加用户
 func addUser(user User) int {
 

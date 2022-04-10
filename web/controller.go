@@ -84,6 +84,35 @@ func Login(c *gin.Context) {
 	}
 }
 
+// Register 用于实现注册用户
+func Register(c *gin.Context) {
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	var user User
+
+	if err := json.Unmarshal(data, &user); err == nil {
+		fmt.Println(user.Username)
+		fmt.Println(user.Password)
+	}
+	if user.Username == "" || user.Password == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 500})
+	}
+	code := 50
+	user.Level = 0
+	// 先判断用户是否存在
+	resUser := getUserFromUsername(user.Username)
+	if len(resUser) != 0 {
+		c.JSON(http.StatusOK, gin.H{"message": "用户重复!", "code": code})
+		return
+	}
+	res := addUser(user)
+	if res == 1 {
+		code = 200
+	} else if res == 2 {
+		code = 999
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "success!", "code": code})
+}
+
 // 获取所有实验的信息
 func API_getChallenges(c *gin.Context) {
 	Challenges := getChallenges()

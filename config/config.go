@@ -15,7 +15,7 @@ var (
 	DB string
 
 	DockerHost = "tcp://127.0.0.1:2376"
-	HubHost    = "192.168.104.233"
+	HubHost    = "192.168.2.232"
 )
 
 func init() {

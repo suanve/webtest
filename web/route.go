@@ -11,6 +11,7 @@ func routing(r *gin.Engine) {
 	{
 		v1.GET("/", Index)
 		v1.POST("/login", Login)
+		v1.POST("/register", Register)
 	}
 
 	//前台实验api路由
