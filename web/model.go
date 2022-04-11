@@ -280,7 +280,7 @@ func addChallenge(challenge Challenge) int {
 // 更新实验信息
 func updateChallenge(challenge Challenge) int {
 	//更新实验表
-	rows, err := db.Query("UPDATE challenge set Name=?,Img=?,Description=?,Type=?,Image=?,Inport=? where id=?", challenge.Name, challenge.Img, challenge.Description, challenge.Type, challenge.Image, challenge.Inport, challenge.Id)
+	rows, err := db.Query("UPDATE challenges set Name=?,Img=?,Description=?,Type=?,Image=?,Inport=? where id=?", challenge.Name, challenge.Img, challenge.Description, challenge.Type, challenge.Image, challenge.Inport, challenge.Id)
 	defer rows.Close()
 	if err != nil {
 		return 0
